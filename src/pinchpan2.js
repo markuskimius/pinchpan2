@@ -30,9 +30,8 @@ class Tap {
         this.tap = null;
         this.tap_travel = 0;
 
-        if(!("preventDefault" in opts)) {
-            opts.preventDefault = true;
-        }
+        if(!("preventDefault" in opts)) opts.preventDefault = true;
+        if(!("zoomFactor" in opts)) opts.zoomFactor = 1.0;
 
         this.target.addEventListener("touchstart", (e) => this.onTapStart(e));
         this.target.addEventListener("mousedown", (e) => this.onTapStart(e));
@@ -96,9 +95,8 @@ class Pan {
         this.pan = null;
         this.isPan = false;
 
-        if(!("preventDefault" in opts)) {
-            opts.preventDefault = true;
-        }
+        if(!("preventDefault" in opts)) opts.preventDefault = true;
+        if(!("zoomFactor" in opts)) opts.zoomFactor = 1.0;
 
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e));
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e));
@@ -149,9 +147,8 @@ class Pinch {
         this.opts = opts;
         this.pinch = null;
 
-        if(!("preventDefault" in opts)) {
-            opts.preventDefault = true;
-        }
+        if(!("preventDefault" in opts)) opts.preventDefault = true;
+        if(!("zoomFactor" in opts)) opts.zoomFactor = 1.0;
 
         this.target.addEventListener("touchstart", (e) => this.onPinchStart(e));
         this.target.addEventListener("touchmove", (e) => this.onPinchMove(e));
@@ -202,7 +199,7 @@ class Pinch {
                     screenY : e.screenY,
                     pageX   : e.pageX,
                     pageY   : e.pageY,
-                    dr      : -e.deltaY / zf,
+                    dr      : -e.deltaY * this.opts.zoomFactor / zf,
                     shiftKey: e.shiftKey,
                     ctrlKey : e.ctrlKey,
                     altKey  : e.altKey,
@@ -225,16 +222,15 @@ class Zoom {
         this.opts = opts;
         this.pinch = new Pinch(this.target, opts);
 
-        if(!("preventDefault" in opts)) {
-            opts.preventDefault = true;
-        }
+        if(!("preventDefault" in opts)) opts.preventDefault = true;
+        if(!("zoomFactor" in opts)) opts.zoomFactor = 1.0;
 
         this.target.addEventListener("pinch", (e) => this.onPinch(e));
     }
 
     onPinch(e) {
         const zoom = parseFloat(this.target.style.zoom ? this.target.style.zoom : "1.0");
-        const factor = e.detail.dr / 100.0;
+        const factor = e.detail.dr * this.opts.zoomFactor / 100.0;
 
         this.target.style.zoom = (zoom + factor).toString();
         // this.target.scrollBy(e.detail.clientX*factor, e.detail.clientY*factor);
