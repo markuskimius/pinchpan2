@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Pinchpan JavaScript Library Suite</title>
+        <link rel="stylesheet" href="style.css">
+        <style>
+            #myImage {
+                height  : 100%;
+                width   : 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Pinchpan2 JavaScript Library Suite</h1>
+        <p>A suite of libraries to work with pinch, pan, and tap actions on mobile devices.</p>
+
+        <h2>Downloads</h2>
+        <li><a href="../src/pinchpan2.js">Pinchpan2</a>
+        <p>Distributed under the <a href="../LICENSE">Apache License 2.0</a></p>
+
+        <h2>Example</h2>
+        <div id="log">The event handler outputs log here.</div>
+        <div id="viewport">
+            <div id="myImage"><img src="test-image.jpg" /></div>
+        </div>
+        <div id="credit">
+            Test image courtesy of
+            <a href="https://www.pexels.com/photo/silver-macbook-air-and-goose-neck-lamp-939331/">pexels.com</a>.
+        </div>
+        <script type="module">
+            import pp2 from "../src/pinchpan2.js";
+
+            const myImage = document.querySelector("#myImage");
+            const log = document.querySelector("#log");
+
+            pp2.tappable(myImage);
+            pp2.zoomable(myImage);
+
+            /* Handle tap event */
+            myImage.addEventListener("tap", (e) => {
+                log.innerText = `Last action: Tap/Click at ${e.detail.pageX}, ${e.detail.pageY}`;
+            });
+
+            /* Handle zoom event */
+            myImage.addEventListener("zoom", (e) => {
+                log.innerText = `Last action: Zoom by ${e.detail.dr}`;
+            });
+        </script>
+    </body>
+</html>
