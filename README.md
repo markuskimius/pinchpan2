@@ -9,19 +9,19 @@ and scroll, click-drag, and click events on desktop devices.
 The library adds events for detecting pinch, swipe, and tap to an element.
 
 pinchpan2.js provides the following methods:
-  * `.tappable(element)` adds the `tap` event to an element
+  * `.tappable(element[, options])` adds the `tap` event to an element
     that is called when the user taps (on a mobile device) or clicks (on a
     desktop device).
 
-  * `.pannable(element)` adds the `pan` event to an element
+  * `.pannable(element[, options])` adds the `pan` event to an element
     that is called when the user swipes (on a mobile device) or click-drags
     (on a desktop device).
 
-  * `.pinchable(element)` adds the `pinch` event to an element
+  * `.pinchable(element[, options])` adds the `pinch` event to an element
     that is called when the user pinches (on a mobile device) or uses
     ctrl-scroll on their mouse (on a desktop device).
 
-  * `.zoomable(element)` makes the element zoomable by the pinch event.  It
+  * `.zoomable(element[, options])` makes the element zoomable by the pinch event.  It
     also adds the `zoom` event to an element when the element is zoomed.
     Enabling zoom implies enabling the pinch event.
 
@@ -41,6 +41,17 @@ The event object passed to the event listener includes the following members:
   * `.detail.ctrlKey` : `true` if the Ctrl key is pressed during the event, `false` otherwise.
   * `.detail.metaKey` : `true` if the Meta key is pressed during the event, `false` otherwise.
   * `.detail.shiftKey`: `true` if the Shift key is pressed during the event, `false` otherwise.
+
+
+## Options
+
+`options` is an object that may specify zero or more of the following:
+
+  * `.preventDefault`: Set this value to false to not preventDefault from
+    propagating.  By default, preventDefault is set to true by the
+    underlying events used by the pinchpan2 library.
+  * `.zoomFactor`: Set this value to how quickly or slowly the zoom should
+    effect.  The default is 1.0.
 
 
 ## Example
