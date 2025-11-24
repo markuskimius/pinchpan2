@@ -42,28 +42,32 @@ class Pan {
     }
 
     onTimer(last_pan) {
-        last_pan.dx *= this.opts.panInertia;
-        last_pan.dy *= this.opts.panInertia;
+        if(last_pan) {
+            last_pan.dx *= this.opts.panInertia;
+            last_pan.dy *= this.opts.panInertia;
 
-        this.target.dispatchEvent(new CustomEvent("pan", {
-            detail  : last_pan,
-        }));
+            this.target.dispatchEvent(new CustomEvent("pan", {
+                detail  : last_pan,
+            }));
 
-        if(Math.abs(last_pan.dx) >= 1 || Math.abs(last_pan.dy) >= 1) {
-            this.timerId = setTimeout(
-                () => this.onTimer(last_pan),
-                10,
-            );
-        }
-        else {
-            this.timerId = null;
+            if(Math.abs(last_pan.dx) >= 1 || Math.abs(last_pan.dy) >= 1) {
+                this.timerId = setTimeout(
+                    () => this.onTimer(last_pan),
+                    10,
+                );
+            }
+            else {
+                this.timerId = null;
+            }
         }
     }
 
     onPanStart(e, sourceType) {
         if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && (get_mod(e)==MOD_CTRL || get_mod(e)==MOD_META))) {
-            if(this.timerId) clearTimeout(this.timerId);
-            this.last_pos = get_pos(e);
+            if(this.timerId) {
+                clearTimeout(this.timerId);
+                this.timerId = null;
+            }
 
             /*
             * FIXME - You get a better panning motion on a touch device if you
@@ -80,6 +84,9 @@ class Pan {
             if(sourceType==IS_MOUSE) {
                 e.preventDefault();
             }
+
+            this.last_pos = get_pos(e);
+            this.last_pan = null;
         }
     }
 
@@ -106,8 +113,10 @@ class Pan {
     }
 
     onPanCancel(e, sourceType) {
+        const pan = this.last_pan;
+
         this.timerId = setTimeout(
-            () => this.onTimer(this.last_pan),
+            () => this.onTimer(pan),
             10,
         );
 
