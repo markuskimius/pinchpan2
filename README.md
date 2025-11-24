@@ -9,7 +9,7 @@ and scroll, click-drag, and click events on desktop devices.
 The library adds events for detecting pinch, swipe, and tap to an element.
 
 pinchpan2.js provides the following methods:
-  * `.tappable(element[, options])` adds the `tap` event to an element
+  * `.tappable(element)` adds the `tap` event to an element
     that is called when the user taps (on a mobile device) or clicks (on a
     desktop device).
 
@@ -36,7 +36,9 @@ The event object passed to the event listener includes the following members:
   * `.detail.screenY` : The screenY position where the event occurred.  For pinch and zoom events, it is the center position where the pinch occurred.
   * `.detail.pageX`   : The pageX position where the event occurred.  For pinch and zoom events, it is the center position where the pinch occurred.
   * `.detail.pageY`   : The pageY position where the event occurred.  For pinch and zoom events, it is the center position where the pinch occurred.
-  * `.detail.dr`      : The scaled number of pinched pixels.  Only available on `pinch` and `zoom` events.
+  * `.detail.dx`      : Number of panned pixels in the horizontal direction.  Only available on the `pan` event.
+  * `.detail.dy`      : Number of panned pixels in the vertical direction.  Only available on the `pan` event.
+  * `.detail.dr`      : Number of pinched pixels.  Only available on `pinch` and `zoom` events.
   * `.detail.altKey`  : `true` if the Alt key is pressed during the event, `false` otherwise.
   * `.detail.ctrlKey` : `true` if the Ctrl key is pressed during the event, `false` otherwise.
   * `.detail.metaKey` : `true` if the Meta key is pressed during the event, `false` otherwise.
@@ -47,11 +49,14 @@ The event object passed to the event listener includes the following members:
 
 `options` is an object that may specify zero or more of the following:
 
-  * `.preventDefault`: Set this value to false to not preventDefault from
-    propagating.  By default, preventDefault is set to true by the
-    underlying events used by the pinchpan2 library.
-  * `.zoomFactor`: Set this value to how quickly or slowly the zoom should
-    effect.  The default is 1.0.
+  * `.altKey`       : When panning via mouse, require the Alt key to be pressed if set to true, not pressed if false. The default is false.
+  * `.ctrlKey`      : When panning via mouse, require the Ctrl key to be pressed if set to true, not pressed if false. The default is false.
+  * `.metaKey`      : When panning via mouse, require the Meta key to be pressed if set to true, not pressed if false. The default is false.
+  * `.shiftKey`     : When panning via mouse, require the Shift key to be pressed if set to true, not pressed if false. The default is false.
+  * `.pinchSpeed`   : When pinching, the speed at which the pinching should occur.  The default is double the ratio of the size of the element to the page.
+  * `.pixelsPerPage`: When simulating pinching by scrolling, the speed at which page-scrolling should occur.  The default is the height of the visible area of the element.
+  * `.zoomMin`      : When zooming, the mininum allowed zoom level.  The default is 0.01.  Must be greater than 0.
+  * `.zoomPerPixel` : When zooming, the amount to zoom by a single pixel of pinching action.  The default is the inverse of the size of the element being zoomed.
 
 
 ## Example
