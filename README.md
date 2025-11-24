@@ -17,9 +17,10 @@ pinchpan2.js provides the following methods:
     that is called when the user pinches (on a mobile device) or uses
     ctrl-scroll/cmd-scroll on their mouse (on a desktop device).
 
-  * `.zoomable(element[, options])` makes the element zoomable by the pinch event.  It
-    also adds the `zoom` event to an element when the element is zoomed.
-    Enabling zoom implies enabling the pinch and pan events.
+  * `.zoomable(element[, options])` makes the element zoomable by the pinch
+    event, and pannable by the pan event.  It also adds the `zoom` event to an
+    element when the element is zoomed.  Enabling zoom implies enabling the
+    pinch and pan events.
 
 
 ## Event
