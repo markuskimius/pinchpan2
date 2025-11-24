@@ -8,8 +8,6 @@ const MOD_SHIFT = 0x01;
 const MOD_CTRL  = 0x02;
 const MOD_ALT   = 0x04;
 const MOD_META  = 0x08;
-const PIXELS_PER_LINE = 20;     /* approximate is ok */
-const PIXELS_PER_PAGE = document.body.scrollHeight;
 
 
 /* ***************************************************************************
@@ -29,8 +27,6 @@ class Pan {
         this.opts = opts;
         this.pan = null;
 
-        this.opts.mod = this.opts.mod ?? get_mod(opts);
-
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH));
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE));
         this.target.addEventListener("touchmove", (e) => this.onPanMove(e, IS_TOUCH));
@@ -42,10 +38,21 @@ class Pan {
     }
 
     onPanStart(e, sourceType) {
-        if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && get_mod(e)==this.opts.mod)) {
+        if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && (get_mod(e)==MOD_CTRL || get_mod(e)==MOD_META))) {
             this.pan = get_pos(e);
 
-e.preventDefault();
+            /*
+            * FIXME - You get a better panning motion on a touch device if you
+            * always call e.preventDefault(), but you lose the ability to
+            * select text within the target.
+            *
+            * Calling e.preventDefault() on a mouse device has the same
+            * problem, but you can select text using shift-click, and it's
+            * necessary on a mouse device if the target contains an image
+            * because click-dragging an image on a mouse device prevents a
+            * mousemove detection.
+            */
+
             if(sourceType==IS_MOUSE) {
                 e.preventDefault();
             }
@@ -78,9 +85,7 @@ class Pinch {
         this.opts = opts;
         this.pinch = null;
 
-        this.opts.mod = this.opts.mod ?? get_mod(opts);
         this.opts.pinchSpeed = this.opts.pinchSpeed ?? (document.body.scrollWidth/this.target.clientWidth + document.body.scrollHeight/this.target.clientHeight);
-        this.opts.pixelsPerPage = this.opts.pixelsPerPage ?? this.target.scrollHeight;
 
         this.target.addEventListener("touchstart", (e) => this.onPinchStart(e));
         this.target.addEventListener("touchmove", (e) => this.onPinchMove(e));
@@ -111,7 +116,9 @@ class Pinch {
     }
 
     onPinchWheel(e) {
-        if(get_mod(e)==MOD_CTRL) {
+        const mod = get_mod(e);
+
+        if(mod==MOD_CTRL || mod==MOD_META) {
             let zf = 1;
 
             // deltaMode 0 : deltaY is in pixels
@@ -119,8 +126,8 @@ class Pinch {
             // deltaMode 2 : deltaY is in pages (need to be scaled)
             switch(e.deltaMode) {
                 case 0 : zf = 1; break;
-                case 1 : zf = PIXELS_PER_LINE; break;
-                case 2 : zf = PIXELS_PER_PAGE; break;
+                case 1 : zf = window.getComputedStyle(this.target).lineHeight; break;
+                case 2 : zf = this.target.scrollHeight; break;
             }
 
             let isok = this.target.dispatchEvent(new CustomEvent("pinch", {
