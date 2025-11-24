@@ -26,9 +26,10 @@ class Pan {
         this.target = target;
         this.opts = opts;
         this.last_pos = null;
+        this.last_pan = null;
         this.timerId = null;
 
-        this.opts.panInertia = this.opts.panInertia ?? 0.965;
+        this.opts.panInertia = this.opts.panInertia ?? 0.95;
 
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH));
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE));
@@ -54,10 +55,14 @@ class Pan {
                 10,
             );
         }
+        else {
+            this.timerId = null;
+        }
     }
 
     onPanStart(e, sourceType) {
         if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && (get_mod(e)==MOD_CTRL || get_mod(e)==MOD_META))) {
+            if(this.timerId) clearTimeout(this.timerId);
             this.last_pos = get_pos(e);
 
             /*
@@ -80,6 +85,11 @@ class Pan {
 
     onPanMove(e, sourceType) {
         if(((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE)) && this.last_pos) {
+            if(this.timerId) {
+                clearTimeout(this.timerId);
+                this.timerId = null;
+            }
+
             const pos = get_pos(e);
             const pan = get_pan(pos, this.last_pos, get_mod(e));
             const isok = this.target.dispatchEvent(new CustomEvent("pan", {
@@ -91,17 +101,18 @@ class Pan {
             }
 
             this.last_pos = pos;
-
-            if(this.timerId) clearTimeout(this.timerId);
-            this.timerId = setTimeout(
-                () => this.onTimer(pan),
-                10,
-            );
+            this.last_pan = pan;
         }
     }
 
     onPanCancel(e, sourceType) {
+        this.timerId = setTimeout(
+            () => this.onTimer(this.last_pan),
+            10,
+        );
+
         this.last_pos = null;
+        this.last_pan = null;
     }
 }
 
