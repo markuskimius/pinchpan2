@@ -25,7 +25,10 @@ class Pan {
     constructor(target, opts={}) {
         this.target = target;
         this.opts = opts;
-        this.pan = null;
+        this.last_pos = null;
+        this.timerId = null;
+
+        this.opts.panInertia = this.opts.panInertia ?? 0.965;
 
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH));
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE));
@@ -37,9 +40,25 @@ class Pan {
         this.target.addEventListener("mouseout", (e) => this.onPanCancel(e, IS_MOUSE));
     }
 
+    onTimer(last_pan) {
+        last_pan.dx *= this.opts.panInertia;
+        last_pan.dy *= this.opts.panInertia;
+
+        this.target.dispatchEvent(new CustomEvent("pan", {
+            detail  : last_pan,
+        }));
+
+        if(Math.abs(last_pan.dx) >= 1 || Math.abs(last_pan.dy) >= 1) {
+            this.timerId = setTimeout(
+                () => this.onTimer(last_pan),
+                10,
+            );
+        }
+    }
+
     onPanStart(e, sourceType) {
         if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && (get_mod(e)==MOD_CTRL || get_mod(e)==MOD_META))) {
-            this.pan = get_pos(e);
+            this.last_pos = get_pos(e);
 
             /*
             * FIXME - You get a better panning motion on a touch device if you
@@ -60,22 +79,29 @@ class Pan {
     }
 
     onPanMove(e, sourceType) {
-        if(((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE)) && this.pan) {
+        if(((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE)) && this.last_pos) {
             const pos = get_pos(e);
+            const pan = get_pan(pos, this.last_pos, get_mod(e));
             const isok = this.target.dispatchEvent(new CustomEvent("pan", {
-                detail  : get_pan(pos, this.pan, get_mod(e)),
+                detail  : pan,
             }));
 
             if(isok) {
                 e.preventDefault();
             }
 
-            this.pan = pos;
+            this.last_pos = pos;
+
+            if(this.timerId) clearTimeout(this.timerId);
+            this.timerId = setTimeout(
+                () => this.onTimer(pan),
+                10,
+            );
         }
     }
 
     onPanCancel(e, sourceType) {
-        this.pan = null;
+        this.last_pos = null;
     }
 }
 
