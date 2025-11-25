@@ -86,7 +86,7 @@ class Pan {
             * mousemove detection.
             */
 
-            if(sourceType==IS_MOUSE) {
+            if(sourceType==IS_MOUSE && e.cancelable) {
                 e.preventDefault();
             }
 
@@ -108,7 +108,7 @@ class Pan {
                 detail  : pan,
             }));
 
-            if(isok) {
+            if(isok && e.cancelable) {
                 e.preventDefault();
             }
 
@@ -159,7 +159,7 @@ class Pinch {
                 detail  : get_pinch(pos, this.pinch, get_mod(e), this.opts.pinchSpeed),
             }));
 
-            if(isok) {
+            if(isok && e.cancelable) {
                 e.preventDefault();
             }
 
@@ -200,7 +200,7 @@ class Pinch {
                 },
             }));
 
-            if(isok) {
+            if(isok && e.cancelable) {
                 e.preventDefault();
             }
         }

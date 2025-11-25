@@ -109,72 +109,73 @@
 
             /* Handle tap event */
             myImage.addEventListener("tap", (e) => {
-                console.log("tap", e);
+                // console.log("tap", e);
                 stdout.innerText = `Last action: Tap/Click at ${e.detail.pageX}, ${e.detail.pageY}`;
             });
 
             /* Handle pan event */
             myImage.addEventListener("pan", (e) => {
-                console.log("pan", e);
+                // console.log("pan", e);
                 stdout.innerText = `Last action: Pan by ${e.detail.dx}, ${e.detail.dy}`;
             });
 
             /* Handle zoom event */
             myImage.addEventListener("zoom", (e) => {
-                console.log("zoom", e);
+                // console.log("zoom", e);
                 stdout.innerText = `Last action: Zoom by ${e.detail.dr}`;
             });
 
             /* Handle click event */
             myImage.addEventListener("click", (e) => {
-                console.log("click", e);
+                // console.log("click", e);
                 stdout.innerText = `Last action: Click at ${e.pageX}, ${e.pageY}`;
             });
 
             /* Handle double click event */
             myImage.addEventListener("dblclick", (e) => {
-                console.log("dblclick", e);
+                // console.log("dblclick", e);
                 stdout.innerText = `Last action: DblClick at ${e.pageX}, ${e.pageY}`;
             });
 
             /* Handle context menu event */
             myImage.addEventListener("contextmenu", (e) => {
-                console.log("contextmenu", e);
+                // console.log("contextmenu", e);
+                stdout.innerText = `Last action: Contextmenu at ${e.pageX}, ${e.pageY}`;
             });
 
             /* Handle tap event */
             myText.addEventListener("tap", (e) => {
-                console.log("tap", e);
+                // console.log("tap", e);
                 stdout.innerText = `Last action: Tap/Click at ${e.detail.pageX}, ${e.detail.pageY}`;
             });
 
             /* Handle pan event */
             myText.addEventListener("pan", (e) => {
-                console.log("pan", e);
+                // console.log("pan", e);
                 stdout.innerText = `Last action: Pan by ${e.detail.dx}, ${e.detail.dy}`;
             });
 
             /* Handle zoom event */
             myText.addEventListener("zoom", (e) => {
-                console.log("zoom", e);
+                // console.log("zoom", e);
                 stdout.innerText = `Last action: Zoom by ${e.detail.dr}`;
             });
 
             /* Handle click event */
             myText.addEventListener("click", (e) => {
-                console.log("click", e);
+                // console.log("click", e);
                 stdout.innerText = `Last action: Click at ${e.pageX}, ${e.pageY}`;
             });
 
             /* Handle double click event */
             myText.addEventListener("dblclick", (e) => {
-                console.log("dblclick", e);
+                // console.log("dblclick", e);
                 stdout.innerText = `Last action: DblClick at ${e.pageX}, ${e.pageY}`;
             });
 
             /* Handle context menu event */
             myText.addEventListener("contextmenu", (e) => {
-                console.log("contextmenu", e);
+                // console.log("contextmenu", e);
                 stdout.innerText = `Last action: ContextMenu at ${e.pageX}, ${e.pageY}`;
             });
         </script>
