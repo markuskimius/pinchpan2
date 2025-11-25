@@ -46,7 +46,7 @@ The event object passed to the event listener includes the following members:
 
 `options` is an object that may specify zero or more of the following:
 
-  * `.panInertia`   : When panning, the inertia of the pan.  The default is 0.95;
+  * `.panInertia`   : When panning, the inertia of the pan.  The default is 0.98;
   * `.pinchSpeed`   : When pinching, the speed at which the pinching should occur.  The default is double the ratio of the size of the element to the page.
   * `.zoomMin`      : When zooming, the mininum allowed zoom level.  The default is 0.01.  Must be greater than 0.
   * `.zoomPerPixel` : When zooming, the amount to zoom by a single pixel of pinching action.  The default is the inverse of the size of the element being zoomed.

@@ -28,8 +28,9 @@ class Pan {
         this.last_pos = null;
         this.last_pan = null;
         this.timerId = null;
+        this.timerLast = null;
 
-        this.opts.panInertia = this.opts.panInertia ?? 0.95;
+        this.opts.panInertia = this.opts.panInertia ?? 0.98;
 
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH));
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE));
@@ -43,6 +44,9 @@ class Pan {
 
     onTimer(last_pan) {
         if(last_pan) {
+            const now = Date.now();
+            const diff = now - this.timerLast;
+
             last_pan.dx *= this.opts.panInertia;
             last_pan.dy *= this.opts.panInertia;
 
@@ -51,9 +55,10 @@ class Pan {
             }));
 
             if(Math.abs(last_pan.dx) >= 1 || Math.abs(last_pan.dy) >= 1) {
+                this.timerLast = now;
                 this.timerId = setTimeout(
                     () => this.onTimer(last_pan),
-                    10,
+                    Math.max(10.0-diff, 0),
                 );
             }
             else {
@@ -115,6 +120,7 @@ class Pan {
     onPanCancel(e, sourceType) {
         const pan = this.last_pan;
 
+        this.timerLast = Date.now();
         this.timerId = setTimeout(
             () => this.onTimer(pan),
             10,
