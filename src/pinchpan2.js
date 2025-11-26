@@ -44,9 +44,6 @@ class Pan {
 
     onTimer(last_pan) {
         if(last_pan) {
-            const now = Date.now();
-            const diff = now - this.timerLast;
-
             last_pan.dx *= this.opts.panInertia;
             last_pan.dy *= this.opts.panInertia;
 
@@ -55,6 +52,9 @@ class Pan {
             }));
 
             if(Math.abs(last_pan.dx) >= 1 || Math.abs(last_pan.dy) >= 1) {
+                const now = Date.now();
+                const diff = now - this.timerLast;
+
                 this.timerLast = now;
                 this.timerId = setTimeout(
                     () => this.onTimer(last_pan),
