@@ -34,12 +34,12 @@ class Pan {
 
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH));
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE));
-        this.target.addEventListener("touchmove", (e) => this.onPanMove(e, IS_TOUCH));
-        this.target.addEventListener("mousemove", (e) => this.onPanMove(e, IS_MOUSE));
-        this.target.addEventListener("touchend", (e) => this.onPanCancel(e, IS_TOUCH));
-        this.target.addEventListener("touchcancel", (e) => this.onPanCancel(e, IS_TOUCH));
-        this.target.addEventListener("mouseup", (e) => this.onPanCancel(e, IS_MOUSE));
-        this.target.addEventListener("mouseout", (e) => this.onPanCancel(e, IS_MOUSE));
+        window.addEventListener("touchmove", (e) => this.onPanMove(e, IS_TOUCH));
+        window.addEventListener("mousemove", (e) => this.onPanMove(e, IS_MOUSE));
+        window.addEventListener("touchend", (e) => this.onPanCancel(e, IS_TOUCH));
+        window.addEventListener("touchcancel", (e) => this.onPanCancel(e, IS_TOUCH));
+        window.addEventListener("mouseup", (e) => this.onPanCancel(e, IS_MOUSE));
+        // window.addEventListener("mouseout", (e) => this.onPanCancel(e, IS_MOUSE));
     }
 
     onTimer(last_pan) {
@@ -105,11 +105,13 @@ class Pan {
             const pos = get_pos(e);
             const pan = get_pan(pos, this.last_pos, get_mod(e));
             const isok = this.target.dispatchEvent(new CustomEvent("pan", {
-                detail  : pan,
+                cancelable  : true,
+                detail      : pan,
             }));
 
-            if(isok && e.cancelable) {
-                e.preventDefault();
+            if(isok) {
+                if(e.cancelable) e.preventDefault();
+                e.stopImmediatePropagation();
             }
 
             this.last_pos = pos;
@@ -140,10 +142,10 @@ class Pinch {
         this.opts.pinchSpeed = this.opts.pinchSpeed ?? (document.body.scrollWidth/this.target.clientWidth + document.body.scrollHeight/this.target.clientHeight);
 
         this.target.addEventListener("touchstart", (e) => this.onPinchStart(e));
-        this.target.addEventListener("touchmove", (e) => this.onPinchMove(e));
         this.target.addEventListener("wheel", (e) => this.onPinchWheel(e));
-        this.target.addEventListener("touchend", (e) => this.onPinchCancel(e));
-        this.target.addEventListener("touchcancel", (e) => this.onPinchCancel(e));
+        window.addEventListener("touchmove", (e) => this.onPinchMove(e));
+        window.addEventListener("touchend", (e) => this.onPinchCancel(e));
+        window.addEventListener("touchcancel", (e) => this.onPinchCancel(e));
     }
 
     onPinchStart(e) {
@@ -156,11 +158,13 @@ class Pinch {
         if(e.touches.length==2 && this.pinch) {
             const pos = get_pos2(e);
             const isok = this.target.dispatchEvent(new CustomEvent("pinch", {
-                detail  : get_pinch(pos, this.pinch, get_mod(e), this.opts.pinchSpeed),
+                cancelable  : true,
+                detail      : get_pinch(pos, this.pinch, get_mod(e), this.opts.pinchSpeed),
             }));
 
-            if(isok && e.cancelable) {
-                e.preventDefault();
+            if(isok) {
+                if(e.cancelable) e.preventDefault();
+                e.stopPropagation();
             }
 
             this.pinch = pos;
@@ -183,7 +187,8 @@ class Pinch {
             }
 
             let isok = this.target.dispatchEvent(new CustomEvent("pinch", {
-                detail  : {
+                cancelable  : true,
+                detail      : {
                     clientX : e.clientX,
                     clientY : e.clientY,
                     offsetX : e.offsetX,
@@ -200,8 +205,9 @@ class Pinch {
                 },
             }));
 
-            if(isok && e.cancelable) {
-                e.preventDefault();
+            if(isok) {
+                if(e.cancelable) e.preventDefault();
+                e.stopPropagation();
             }
         }
     }
@@ -217,6 +223,7 @@ class Zoom {
         this.opts = opts;
 
         this.opts.zoomMin = this.opts.zoomMin ?? 0.01;
+        this.opts.zoomMax = this.opts.zoomMax ?? Infinity;
         this.opts.zoomPerPixel = this.opts.zoomPerPixel ?? 2.0/(this.target.clientWidth + this.target.clientHeight);
 
         enablePan(this.target, this.opts);
@@ -227,21 +234,40 @@ class Zoom {
     }
 
     onPan(e) {
-        const zoom = parseFloat(this.target.style.zoom ? this.target.style.zoom : "1.0");
+        let isok = (e.detail.dx || e.detail.dy);
 
-        this.target.scrollBy({
-            left    : -e.detail.dx/zoom,
-            top     : -e.detail.dy/zoom,
-        });
+        if(isok) {
+            const zoom = parseFloat(this.target.style.zoom ? this.target.style.zoom : "1.0");
+
+            const next = {
+                left    : this.target.scrollLeft - e.detail.dx/zoom,
+                top     : this.target.scrollTop  - e.detail.dy/zoom,
+            }
+
+            this.target.scrollTo({
+                left    : next.left,
+                top     : next.top,
+            });
+
+            /* We didn't scroll! */
+            if(this.target.scrollLeft != next.left && this.target.scrollTop != next.top) {
+                isok = false;
+            }
+        }
+
+        if(isok && e.cancelable) {
+            e.preventDefault();
+        }
     }
 
     onPinch(e) {
         const container = this.target.getBoundingClientRect();
         const zoom = parseFloat(this.target.style.zoom ? this.target.style.zoom : "1.0");
         const factor = e.detail.dr * this.opts.zoomPerPixel * zoom;
-        const newzoom = Math.max(zoom + factor, this.opts.zoomMin);
-        const isok = this.target.dispatchEvent(new CustomEvent("zoom", {
-            detail  : e.detail,
+        const newzoom = Math.min(Math.max(zoom + factor, this.opts.zoomMin), this.opts.zoomMax);
+        const isok = (newzoom != zoom) && this.target.dispatchEvent(new CustomEvent("zoom", {
+            cancelable  : true,
+            detail      : e.detail,
         }));
 
         if(isok) {
@@ -250,6 +276,10 @@ class Zoom {
                 left    : (e.detail.clientX-container.left)/zoom * (newzoom-zoom)/newzoom,
                 top     : (e.detail.clientY-container.top)/zoom * (newzoom-zoom)/newzoom,
             });
+        }
+
+        if(isok && e.cancelable) {
+            e.preventDefault();
         }
     }
 }
