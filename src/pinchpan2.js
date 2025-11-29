@@ -33,14 +33,14 @@ class Pan {
 
         this.opts.panInertia = this.opts.panInertia ?? 0.98;
 
-        this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH));
-        this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE));
-        window.addEventListener("touchmove", (e) => this.onPanMove(e, IS_TOUCH));
-        window.addEventListener("mousemove", (e) => this.onPanMove(e, IS_MOUSE));
-        window.addEventListener("touchend", (e) => this.onPanCancel(e, IS_TOUCH));
-        window.addEventListener("touchcancel", (e) => this.onPanCancel(e, IS_TOUCH));
-        window.addEventListener("mouseup", (e) => this.onPanCancel(e, IS_MOUSE));
-        // window.addEventListener("mouseout", (e) => this.onPanCancel(e, IS_MOUSE));
+        this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH), { passive:false });
+        this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE), { passive:false });
+        window.addEventListener("touchmove", (e) => this.onPanMove(e, IS_TOUCH), { passive:false });
+        window.addEventListener("mousemove", (e) => this.onPanMove(e, IS_MOUSE), { passive:false });
+        window.addEventListener("touchend", (e) => this.onPanCancel(e, IS_TOUCH), { passive:false });
+        window.addEventListener("touchcancel", (e) => this.onPanCancel(e, IS_TOUCH), { passive:false });
+        window.addEventListener("mouseup", (e) => this.onPanCancel(e, IS_MOUSE), { passive:false });
+        // window.addEventListener("mouseout", (e) => this.onPanCancel(e, IS_MOUSE), { passive:false });
     }
 
     onPanStart(e, sourceType) {
@@ -156,11 +156,11 @@ class Pinch {
 
         this.opts.pinchSpeed = this.opts.pinchSpeed ?? (document.body.scrollWidth/this.target.clientWidth + document.body.scrollHeight/this.target.clientHeight);
 
-        this.target.addEventListener("touchstart", (e) => this.onPinchStart(e));
-        this.target.addEventListener("wheel", (e) => this.onPinchWheel(e));
-        window.addEventListener("touchmove", (e) => this.onPinchMove(e));
-        window.addEventListener("touchend", (e) => this.onPinchCancel(e));
-        window.addEventListener("touchcancel", (e) => this.onPinchCancel(e));
+        this.target.addEventListener("touchstart", (e) => this.onPinchStart(e), { passive:false });
+        this.target.addEventListener("wheel", (e) => this.onPinchWheel(e), { passive:false });
+        window.addEventListener("touchmove", (e) => this.onPinchMove(e), { passive:false });
+        window.addEventListener("touchend", (e) => this.onPinchCancel(e), { passive:false });
+        window.addEventListener("touchcancel", (e) => this.onPinchCancel(e), { passive:false });
     }
 
     onPinchStart(e) {
@@ -246,8 +246,8 @@ class Zoom {
         enablePan(this.target, this.opts);
         enablePinch(this.target, this.opts);
 
-        this.target.addEventListener("pan", (e) => this.onPan(e));
-        this.target.addEventListener("pinch", (e) => this.onPinch(e));
+        this.target.addEventListener("pan", (e) => this.onPan(e), { passive:false });
+        this.target.addEventListener("pinch", (e) => this.onPinch(e), { passive:false });
     }
 
     onPan(e) {
