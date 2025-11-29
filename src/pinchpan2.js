@@ -8,6 +8,7 @@ const MOD_SHIFT = 0x01;
 const MOD_CTRL  = 0x02;
 const MOD_ALT   = 0x04;
 const MOD_META  = 0x08;
+const INERTIA_UPDATE_RATE = 10.0;  /* in milliseconds */
 
 
 /* ***************************************************************************
@@ -102,11 +103,18 @@ class Pan {
             this.timerId = null;
         }
 
-        this.timerLast = Date.now();
-        this.timerId = setTimeout(
-            () => this.onTimer(pan),
-            10,
-        );
+        if(pan) {
+            /* Adjust the deltas so they're in INERTIA_UPDATE_RATE */
+            pan.dx *= INERTIA_UPDATE_RATE / pan.dt;
+            pan.dy *= INERTIA_UPDATE_RATE / pan.dt;
+            pan.dt = INERTIA_UPDATE_RATE;
+
+            this.timerLast = Date.now();
+            this.timerId = setTimeout(
+                () => this.onTimer(pan),
+                INERTIA_UPDATE_RATE,
+            );
+        }
 
         this.last_pos = null;
         this.last_pan = null;
@@ -128,7 +136,7 @@ class Pan {
                 this.timerLast = now;
                 this.timerId = setTimeout(
                     () => this.onTimer(last_pan),
-                    Math.max(10.0-diff, 0),
+                    Math.max(INERTIA_UPDATE_RATE-diff, 0),
                 );
             }
             else {
@@ -312,6 +320,7 @@ function avg(touches, what) {
 /* Return a single-position object that tracks a single touch */
 function get_pos(e) {
     return {
+        datetime: Date.now(),
         clientX : e.touches ? avg(e.touches, 'clientX') : e.clientX,
         clientY : e.touches ? avg(e.touches, 'clientY') : e.clientY,
         offsetX : e.touches ? avg(e.touches, 'offsetX') : e.offsetX,
@@ -366,6 +375,7 @@ function get_pan(is, was, mod) {
         screenY : is.screenY,
         dx      : is.screenX - was.screenX,
         dy      : is.screenY - was.screenY,
+        dt      : is.datetime - was.datetime,
         shiftKey: mod & MOD_SHIFT ? true : false,
         ctrlKey : mod & MOD_CTRL ? true : false,
         altKey  : mod & MOD_ALT ? true : false,
