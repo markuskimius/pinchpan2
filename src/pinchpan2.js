@@ -241,11 +241,13 @@ class Zoom {
 
         this.opts.zoomMin = this.opts.zoomMin ?? 0.01;
         this.opts.zoomMax = this.opts.zoomMax ?? Infinity;
+        this.opts.zoomPanSpeed = this.opts.zoomPanSpeed ?? 2.0;
         this.opts.zoomPerPixel = this.opts.zoomPerPixel ?? 2.0/(this.target.clientWidth + this.target.clientHeight);
 
         enablePan(this.target, this.opts);
         enablePinch(this.target, this.opts);
 
+        this.target.style.touchAction = "none";
         this.target.addEventListener("pan", (e) => this.onPan(e), { passive:false });
         this.target.addEventListener("pinch", (e) => this.onPinch(e), { passive:false });
     }
@@ -257,8 +259,8 @@ class Zoom {
             const zoom = parseFloat(this.target.style.zoom ? this.target.style.zoom : "1.0");
 
             const next = {
-                left    : this.target.scrollLeft - e.detail.dx/zoom,
-                top     : this.target.scrollTop  - e.detail.dy/zoom,
+                left    : this.target.scrollLeft - e.detail.dx*this.opts.zoomPanSpeed/zoom,
+                top     : this.target.scrollTop  - e.detail.dy*this.opts.zoomPanSpeed/zoom,
             }
 
             this.target.scrollTo({

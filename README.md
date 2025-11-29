@@ -50,7 +50,8 @@ The event object passed to the event listener includes the following members:
   * `.pinchSpeed`   : When pinching, the speed at which the pinching should occur.  The default is double the ratio of the size of the element to the page.
   * `.zoomMin`      : When zooming, the mininum allowed zoom level.  The default is 0.01.  Must be greater than 0.
   * `.zoomMax`      : When zooming, the maximum allowed zoom level.  The default is Infinite.  Must be greater-than-or-equal-to zoomMin.
-  * `.zoomPerPixel` : When zooming, the amount to zoom by a single pixel of pinching action.  The default is the inverse of the size of the element being zoomed.
+  * `.zoomPanSpeed` : When zooming, the amount to pan by the panning action.  The default is 2.0.
+  * `.zoomPerPixel` : When zooming, the amount to zoom by a single pixel of pinching action.  The default is twice the inverse of the size of the element being zoomed.
 
 
 ## Example
