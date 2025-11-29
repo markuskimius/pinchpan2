@@ -27,8 +27,8 @@ class Pan {
         this.opts = opts;
         this.last_pos = null;
         this.last_pan = null;
-        this.timerId = null;
         this.timerLast = null;
+        this.timerId = null;
 
         this.opts.panInertia = this.opts.panInertia ?? 0.98;
 
@@ -40,6 +40,76 @@ class Pan {
         window.addEventListener("touchcancel", (e) => this.onPanCancel(e, IS_TOUCH));
         window.addEventListener("mouseup", (e) => this.onPanCancel(e, IS_MOUSE));
         // window.addEventListener("mouseout", (e) => this.onPanCancel(e, IS_MOUSE));
+    }
+
+    onPanStart(e, sourceType) {
+        if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && (get_mod(e)==MOD_CTRL || get_mod(e)==MOD_META))) {
+            if(this.timerId) {
+                clearTimeout(this.timerId);
+                this.timerLast = null;
+                this.timerId = null;
+            }
+
+            /*
+            * FIXME - You get a better panning motion on a touch device if you
+            * always call e.preventDefault(), but you lose the ability to
+            * select text within the target.
+            *
+            * Calling e.preventDefault() on a mouse device can have the same
+            * problem but we avoid the problem by using the modifier that has
+            * no useful default action.
+            */
+
+            if(sourceType==IS_MOUSE && e.cancelable) {
+                e.preventDefault();
+            }
+
+            this.last_pos = get_pos(e);
+            this.last_pan = null;
+        }
+    }
+
+    onPanMove(e, sourceType) {
+        if(((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE)) && this.last_pos) {
+            if(this.timerId) {
+                clearTimeout(this.timerId);
+                this.timerLast = null;
+                this.timerId = null;
+            }
+
+            const pos = get_pos(e);
+            const pan = get_pan(pos, this.last_pos, get_mod(e));
+            const isok = this.target.dispatchEvent(new CustomEvent("pan", {
+                cancelable  : true,
+                detail      : pan,
+            }));
+
+            if(isok) {
+                if(e.cancelable) e.preventDefault();
+                e.stopPropagation();
+            }
+
+            this.last_pos = pos;
+            this.last_pan = pan;
+        }
+    }
+
+    onPanCancel(e, sourceType) {
+        const pan = this.last_pan;
+
+        if(this.timerId) {
+            clearTimeout(this.timerId);
+            this.timerId = null;
+        }
+
+        this.timerLast = Date.now();
+        this.timerId = setTimeout(
+            () => this.onTimer(pan),
+            10,
+        );
+
+        this.last_pos = null;
+        this.last_pan = null;
     }
 
     onTimer(last_pan) {
@@ -63,73 +133,10 @@ class Pan {
             }
             else {
                 this.timerId = null;
+                this.last_pos = null;
+                this.last_pan = null;
             }
         }
-    }
-
-    onPanStart(e, sourceType) {
-        if((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE && (get_mod(e)==MOD_CTRL || get_mod(e)==MOD_META))) {
-            if(this.timerId) {
-                clearTimeout(this.timerId);
-                this.timerId = null;
-            }
-
-            /*
-            * FIXME - You get a better panning motion on a touch device if you
-            * always call e.preventDefault(), but you lose the ability to
-            * select text within the target.
-            *
-            * Calling e.preventDefault() on a mouse device has the same
-            * problem, but you can select text using shift-click, and it's
-            * necessary on a mouse device if the target contains an image
-            * because click-dragging an image on a mouse device prevents a
-            * mousemove detection.
-            */
-
-            if(sourceType==IS_MOUSE && e.cancelable) {
-                e.preventDefault();
-            }
-
-            this.last_pos = get_pos(e);
-            this.last_pan = null;
-        }
-    }
-
-    onPanMove(e, sourceType) {
-        if(((sourceType==IS_TOUCH && e.touches.length==1) || (sourceType==IS_MOUSE)) && this.last_pos) {
-            if(this.timerId) {
-                clearTimeout(this.timerId);
-                this.timerId = null;
-            }
-
-            const pos = get_pos(e);
-            const pan = get_pan(pos, this.last_pos, get_mod(e));
-            const isok = this.target.dispatchEvent(new CustomEvent("pan", {
-                cancelable  : true,
-                detail      : pan,
-            }));
-
-            if(isok) {
-                if(e.cancelable) e.preventDefault();
-                e.stopImmediatePropagation();
-            }
-
-            this.last_pos = pos;
-            this.last_pan = pan;
-        }
-    }
-
-    onPanCancel(e, sourceType) {
-        const pan = this.last_pan;
-
-        this.timerLast = Date.now();
-        this.timerId = setTimeout(
-            () => this.onTimer(pan),
-            10,
-        );
-
-        this.last_pos = null;
-        this.last_pan = null;
     }
 }
 
@@ -186,7 +193,7 @@ class Pinch {
                 case 2 : zf = this.target.scrollHeight; break;
             }
 
-            let isok = this.target.dispatchEvent(new CustomEvent("pinch", {
+            const isok = this.target.dispatchEvent(new CustomEvent("pinch", {
                 cancelable  : true,
                 detail      : {
                     clientX : e.clientX,
@@ -255,7 +262,7 @@ class Zoom {
             }
         }
 
-        if(isok && e.cancelable) {
+        if(!isok && e.cancelable) {
             e.preventDefault();
         }
     }
@@ -273,12 +280,12 @@ class Zoom {
         if(isok) {
             this.target.style.zoom = newzoom.toString();
             this.target.scrollBy({
-                left    : (e.detail.clientX-container.left)/zoom * (newzoom-zoom)/newzoom,
-                top     : (e.detail.clientY-container.top)/zoom * (newzoom-zoom)/newzoom,
+                left    : (e.detail.pageX-container.left)/zoom * (newzoom-zoom)/newzoom,
+                top     : (e.detail.pageY-container.top)/zoom * (newzoom-zoom)/newzoom,
             });
         }
 
-        if(isok && e.cancelable) {
+        if(!isok && e.cancelable) {
             e.preventDefault();
         }
     }
@@ -355,8 +362,8 @@ function get_pan(is, was, mod) {
         pageY   : is.pageY,
         screenX : is.screenX,
         screenY : is.screenY,
-        dx      : is.pageX - was.pageX,
-        dy      : is.pageY - was.pageY,
+        dx      : is.screenX - was.screenX,
+        dy      : is.screenY - was.screenY,
         shiftKey: mod & MOD_SHIFT ? true : false,
         ctrlKey : mod & MOD_CTRL ? true : false,
         altKey  : mod & MOD_ALT ? true : false,
