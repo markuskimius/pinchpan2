@@ -158,6 +158,8 @@ class Pinch {
     onPinchStart(e) {
         if(e.touches.length==2) {
             this.pinch = get_pos2(e);
+
+            if(e.cancelable) e.preventDefault();
         }
     }
 
