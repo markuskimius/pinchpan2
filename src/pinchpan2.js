@@ -59,16 +59,7 @@ class Pan {
                 this.timerId = null;
             }
 
-            /*
-            * FIXME - You get a better panning motion on a touch device if you
-            * always call e.preventDefault(), but you lose the ability to
-            * select text within the target.
-            *
-            * Calling e.preventDefault() on a mouse device can have the same
-            * problem but we avoid the problem by using the modifier that has
-            * no useful default action.
-            */
-
+            /* Prevent text selection */
             if(sourceType==IS_MOUSE && e.cancelable) {
                 e.preventDefault();
             }
