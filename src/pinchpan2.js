@@ -10,6 +10,13 @@ const MOD_ALT   = 0x04;
 const MOD_META  = 0x08;
 const INERTIA_UPDATE_RATE = 10.0;  /* in milliseconds */
 
+const DEFAULT_PAN_INERTIA = 0.98;
+const DEFAULT_PAN_SPEED = 3.0;
+const DEFAULT_PINCH_SPEED = 10.0;
+const DEFAULT_ZOOM_MIN = 0.01;
+const DEFAULT_ZOOM_MAX = Infinity;
+const DEFAULT_ZOOM_PER_PIXEL = 0.001;
+
 
 /* ***************************************************************************
 * GLOBALS
@@ -31,7 +38,8 @@ class Pan {
         this.timerLast = null;
         this.timerId = null;
 
-        this.opts.panInertia = this.opts.panInertia ?? 0.98;
+        this.opts.panInertia = this.opts.panInertia ?? DEFAULT_PAN_INERTIA;
+        this.opts.panSpeed = this.opts.panSpeed ?? DEFAULT_PAN_SPEED;
 
         this.target.addEventListener("touchstart", (e) => this.onPanStart(e, IS_TOUCH), { passive:false });
         this.target.addEventListener("mousedown", (e) => this.onPanStart(e, IS_MOUSE), { passive:false });
@@ -79,7 +87,7 @@ class Pan {
             }
 
             const pos = get_pos(e);
-            const pan = get_pan(pos, this.last_pos, get_mod(e));
+            const pan = get_pan(pos, this.last_pos, get_mod(e), sourceType==IS_TOUCH ? this.opts.panSpeed : 1.0);
             const isok = this.target.dispatchEvent(new CustomEvent("pan", {
                 cancelable  : true,
                 detail      : pan,
@@ -154,7 +162,7 @@ class Pinch {
         this.opts = opts;
         this.pinch = null;
 
-        this.opts.pinchSpeed = this.opts.pinchSpeed ?? (document.body.scrollWidth/this.target.clientWidth + document.body.scrollHeight/this.target.clientHeight);
+        this.opts.pinchSpeed = this.opts.pinchSpeed ?? DEFAULT_PINCH_SPEED;
 
         this.target.addEventListener("touchstart", (e) => this.onPinchStart(e), { passive:false });
         this.target.addEventListener("wheel", (e) => this.onPinchWheel(e), { passive:false });
@@ -239,10 +247,9 @@ class Zoom {
         this.target = target;
         this.opts = opts;
 
-        this.opts.zoomMin = this.opts.zoomMin ?? 0.01;
-        this.opts.zoomMax = this.opts.zoomMax ?? Infinity;
-        this.opts.zoomPanSpeed = this.opts.zoomPanSpeed ?? 2.0;
-        this.opts.zoomPerPixel = this.opts.zoomPerPixel ?? 2.0/(this.target.clientWidth + this.target.clientHeight);
+        this.opts.zoomMin = this.opts.zoomMin ?? DEFAULT_ZOOM_MIN;
+        this.opts.zoomMax = this.opts.zoomMax ?? DEFAULT_ZOOM_MAX;
+        this.opts.zoomPerPixel = this.opts.zoomPerPixel ?? DEFAULT_ZOOM_PER_PIXEL;
 
         enablePan(this.target, this.opts);
         enablePinch(this.target, this.opts);
@@ -259,8 +266,8 @@ class Zoom {
             const zoom = parseFloat(this.target.style.zoom ? this.target.style.zoom : "1.0");
 
             const next = {
-                left    : this.target.scrollLeft - e.detail.dx*this.opts.zoomPanSpeed/zoom,
-                top     : this.target.scrollTop  - e.detail.dy*this.opts.zoomPanSpeed/zoom,
+                left    : this.target.scrollLeft - e.detail.dx/zoom,
+                top     : this.target.scrollTop  - e.detail.dy/zoom,
             }
 
             this.target.scrollTo({
@@ -365,7 +372,7 @@ function get_pos2(e) {
 }
 
 /* Return a pan object that tracks change in cartesian coordinates */
-function get_pan(is, was, mod) {
+function get_pan(is, was, mod, speed=1.0) {
     return {
         clientX : is.clientX,
         clientY : is.clientY,
@@ -375,8 +382,8 @@ function get_pan(is, was, mod) {
         pageY   : is.pageY,
         screenX : is.screenX,
         screenY : is.screenY,
-        dx      : is.screenX - was.screenX,
-        dy      : is.screenY - was.screenY,
+        dx      : (is.screenX - was.screenX) * speed,
+        dy      : (is.screenY - was.screenY) * speed,
         dt      : is.datetime - was.datetime,
         shiftKey: mod & MOD_SHIFT ? true : false,
         ctrlKey : mod & MOD_CTRL ? true : false,
