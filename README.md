@@ -40,6 +40,7 @@ The event object passed to the event listener includes the following members:
   * `.detail.ctrlKey` : `true` if the Ctrl key is pressed during the event, `false` otherwise.
   * `.detail.metaKey` : `true` if the Meta key is pressed during the event, `false` otherwise.
   * `.detail.shiftKey`: `true` if the Shift key is pressed during the event, `false` otherwise.
+  * `.detail.isInertial` : `true` if the pan event is the result of an inertial motion of a previous swipe action.
 
 
 ## Options

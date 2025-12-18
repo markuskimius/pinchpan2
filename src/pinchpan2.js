@@ -123,6 +123,7 @@ class Pan {
         if(last_pan) {
             last_pan.dx *= this.opts.panInertia;
             last_pan.dy *= this.opts.panInertia;
+            last_pan.isInertial = true;
 
             this.target.dispatchEvent(new CustomEvent("pan", {
                 detail  : last_pan,
